@@ -274,17 +274,17 @@ NSInteger ccLoadFileIntoMemory(const char *filename, unsigned char **out)
 		ret = [self getPath:relPath forSuffix:iPadRetinaDisplaySuffix_];
 		*resolutionType = kCCResolutioniPadRetinaDisplay;
 	}
+    
+    // iPhone HD ?
+	if( device == kCCiPhoneRetinaDisplay || (enableFallbackSuffixes_ && !ret) ) {
+		ret = [self getPath:relPath forSuffix:iPhoneRetinaDisplaySuffix_];
+		*resolutionType = kCCResolutioniPhoneRetinaDisplay;
+	}
 
 	// iPad ?
 	if( device == kCCiPad || (enableFallbackSuffixes_ && !ret) ) {
 		ret = [self getPath:relPath forSuffix:iPadSuffix_];
 		*resolutionType = kCCResolutioniPad;
-	}
-	
-	// iPhone HD ?
-	if( device == kCCiPhoneRetinaDisplay || (enableFallbackSuffixes_ && !ret) ) {
-		ret = [self getPath:relPath forSuffix:iPhoneRetinaDisplaySuffix_];
-		*resolutionType = kCCResolutioniPhoneRetinaDisplay;
 	}
 
 	// If it is not Phone HD, or if the previous "getPath" failed, then use iPhone images.
