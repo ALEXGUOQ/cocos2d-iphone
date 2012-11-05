@@ -63,3 +63,33 @@
 
 @interface ScrollViewDemo : BaseClippingNodeTest
 @end
+
+#if COCOS2D_DEBUG > 1
+
+@interface RawStencilBufferTest : BaseClippingNodeTest
+{
+    CCSprite *sprite_;
+}
+
+- (void)setupStencilForClippingOnPlane:(GLint)plane;
+
+- (void)setupStencilForDrawingOnPlane:(GLint)plane;
+
+@end
+
+@interface RawStencilBufferTest2 : RawStencilBufferTest
+@end
+
+@interface RawStencilBufferTest3 : RawStencilBufferTest
+@end
+
+@interface RawStencilBufferTest4 : RawStencilBufferTest
+@end
+
+@interface RawStencilBufferTest5 : RawStencilBufferTest
+@end
+
+@interface RawStencilBufferTest6 : RawStencilBufferTest
+@end
+
+#endif
