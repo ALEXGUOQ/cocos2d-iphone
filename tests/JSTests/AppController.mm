@@ -11,33 +11,15 @@
 #import "js_bindings_core.h"
 #import "js_bindings_basic_conversions.h"
 
+// CocosBuilder Reader
+#import "CCBReader.h"
+
 // SpiderMonkey
 #include "jsapi.h"  
 
 #pragma mark - AppDelegate - iOS
 
 // CLASS IMPLEMENTATIONS
-
-@interface BootLayer : CCLayer
-@end
-@implementation  BootLayer
--(void) onEnter
-{
-	[super onEnter];
-	
-	NSString *name = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleExecutable"];
-	
-	if( [name isEqual:@"JS Watermelon"] )
-		[[JSBCore sharedInstance] runScript:@"watermelon_with_me.js"];
-	else if( [name isEqual:@"JS Tests"] )
-		[[JSBCore sharedInstance] runScript:@"tests-boot-jsb.js"];
-	else if( [name isEqual:@"JS Moon Warriors"] )
-		[[JSBCore sharedInstance] runScript:@"MoonWarriors.js"];
-	else if( [name isEqual:@"JS CocosDragon"] )
-		[[JSBCore sharedInstance] runScript:@"main.js"];
-}
-@end
-
 
 @implementation AppController
 
@@ -83,26 +65,19 @@
 //	[director_ setProjection:kCCDirectorProjection2D];
 	[director_ setProjection:kCCDirectorProjection3D];
 
-	// Enables High Res mode (Retina Display) on iPhone 4 and maintains low res on all other devices
-//	if( ! [director_ enableRetinaDisplay:YES] )
-//		CCLOG(@"Retina Display Not supported");
+
+	// Enables High Res mode (Retina Display) for CocosDragon
+	NSString *name = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleExecutable"];
+	if( [name isEqual:@"JS CocosDragon"] ) {
+		if( ! [director_ enableRetinaDisplay:YES] )
+			CCLOG(@"Retina Display Not supported");
+	}
 
 	// Default texture format for PNG/BMP/TIFF/JPEG/GIF images
 	// It can be RGBA8888, RGBA4444, RGB5_A1, RGB565
 	// You can change anytime.
 	[CCTexture2D setDefaultAlphaPixelFormat:kCCTexture2DPixelFormat_RGBA8888];
 
-	// If the 1st suffix is not found, then the fallback suffixes are going to used. If none is found, it will try with the name without suffix.
-	// On iPad HD  : "-ipadhd", "-ipad",  "-hd"
-	// On iPad     : "-ipad", "-hd"
-	// On iPhone HD: "-hd"
-	CCFileUtils *sharedFileUtils = [CCFileUtils sharedFileUtils];
-	[sharedFileUtils setiPhoneRetinaDisplaySuffix:@"-hd"];		// Default on iPhone RetinaDisplay is "-hd"
-	[sharedFileUtils setiPadSuffix:@"-ipad"];					// Default on iPad is "ipad"
-	[sharedFileUtils setiPadRetinaDisplaySuffix:@"-ipadhd"];	// Default on iPad RetinaDisplay is "-ipadhd"
-
-	if( CC_CONTENT_SCALE_FACTOR() == 2 )
-		[sharedFileUtils setEnableFallbackSuffixes:YES];		// Default: NO. No fallback suffixes are going to be used
 
 	// Assume that PVR images have premultiplied alpha
 	[CCTexture2D PVRImagesHavePremultipliedAlpha:YES];
@@ -161,12 +136,6 @@
 	
 	// Assume that PVR images have premultiplied alpha
 	[CCTexture2D PVRImagesHavePremultipliedAlpha:YES];
-
-	// Mac... Use iPad resources by default
-	CCFileUtils *sharedFileUtils = [CCFileUtils sharedFileUtils];
-	[sharedFileUtils setMacRetinaDisplaySuffix:@"-ipadhd"];
-	[sharedFileUtils setMacSuffix:@"-ipad"];
-	[sharedFileUtils setEnableFallbackSuffixes:YES];		// Default: NO. No fallback suffixes are going to be used
 	
 	[director_ setResizeMode:kCCDirectorResize_AutoScale];
 //	[director_ setResizeMode:kCCDirectorResize_NoScale];
@@ -179,95 +148,49 @@
 
 #pragma mark - AppController - Common
 
-- (void)initThoMoServer
-{
-    thoMoServer = [[ThoMoServerStub alloc] initWithProtocolIdentifier:@"JSConsole"];
-    [thoMoServer setDelegate:self];
-    [thoMoServer start];
-}
-
-- (void) server:(ThoMoServerStub *)theServer acceptedConnectionFromClient:(NSString *)aClientIdString {
-    NSLog(@"New Client: %@", aClientIdString);
-}
-
-- (void) server:(ThoMoServerStub *)theServer didReceiveData:(id)theData fromClient:(NSString *)aClientIdString {
-    NSString *script = (NSString *)theData;
-	
-	
-	NSThread *cocos2dThread = [[CCDirector sharedDirector] runningThread];
-	
-	[cocos2dThread performBlock:^(void) { 
-		NSString * string = @"None\n";
-		jsval out;
-		BOOL success = [[JSBCore sharedInstance] evalString:script outVal:&out];
-		
-		if(success)
-		{
-			if(JSVAL_IS_BOOLEAN(out))
-			{
-				string = [NSString stringWithFormat:@"Result(bool): %@.\n", (JSVAL_TO_BOOLEAN(out)) ? @"true" : @"false"];
-			}
-			else if(JSVAL_IS_INT(out))
-			{
-				string = [NSString stringWithFormat:@"Result(int): %i.\n", JSVAL_TO_INT(out)];
-			}
-			else if(JSVAL_IS_DOUBLE(out))
-			{
-				string = [NSString stringWithFormat:@"Result(double): %f.\n", JSVAL_TO_DOUBLE(out)];
-			}
-			else if(JSVAL_IS_STRING(out)) {
-				NSString *tmp;
-				jsval_to_NSString( [[JSBCore sharedInstance] globalContext], out, &tmp );
-				string = [NSString stringWithFormat:@"Result(string): %@.\n", tmp];
-			}
-			else if (JSVAL_IS_VOID(out) )
-				string = @"Result(void):\n";
-			else
-				string = @"Result(object?):\n";
-		}
-		else
-		{
-			string = [NSString stringWithFormat:@"Error evaluating script:\n#############################\n%@\n#############################\n", script];
-		}
-		
-		[thoMoServer sendToAllClients:string];
-		
-	}
-				  waitUntilDone:NO];
-	
-}
-
-
 -(void)dealloc
 {
-	[thoMoServer stop];
-	[thoMoServer release];
-
 	[super dealloc];
 }
 
 -(void) run
-{
-#if DEBUG
-	// init server
-	[self initThoMoServer];
-#endif
-
-//	CCScene *scene = [CCScene node];
-//	BootLayer *layer = [BootLayer node];
-//	[scene addChild:layer];
-//	[[CCDirector sharedDirector] runWithScene:scene];
-	
+{	
 	NSString *name = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleExecutable"];
-	
-	if( [name isEqual:@"JS Watermelon"] )
-		[[JSBCore sharedInstance] runScript:@"watermelon_with_me.js"];
+
+	CCFileUtils *fileutils = [CCFileUtils sharedFileUtils];
+
+	if( [name isEqual:@"JS Watermelon"] ) {
+		[[JSBCore sharedInstance] runScript:@"boot-jsb.js"];
+#if defined(__CC_PLATFORM_MAC)
+		// Use ipad resources for Mac
+		[[fileutils suffixesDict] setObject:@"-ipad" forKey:kCCFileUtilsMac];
+		[[fileutils suffixesDict] setObject:@"-ipadhd" forKey:kCCFileUtilsMacHD];
+		NSLog(@"%@", [fileutils suffixesDict]);
+#endif
+	}
 	else if( [name isEqual:@"JS Tests"] )
 		[[JSBCore sharedInstance] runScript:@"tests-boot-jsb.js"];
 	else if( [name isEqual:@"JS Moon Warriors"] )
-		[[JSBCore sharedInstance] runScript:@"MoonWarriors-native.js"];
-	else if( [name isEqual:@"JS CocosDragon"] )
-		[[JSBCore sharedInstance] runScript:@"main.js"];	
+		[[JSBCore sharedInstance] runScript:@"MoonWarriors-jsb.js"];
+	else if( [name isEqual:@"JS CocosDragon"] ) {
+		[fileutils setSearchMode:kCCFileUtilsSearchDirectory];
+#if defined(__CC_PLATFORM_MAC)
+		// Use the iPad folder for Mac resources
+		[[fileutils directoriesDict] setObject:@"resources-ipad" forKey:kCCFileUtilsMac];
+		[[fileutils directoriesDict] setObject:@"resources-iphonehd" forKey:kCCFileUtilsiPhoneHD];
+
+		// Serch on iPhoneHD resources as a fallback
+		NSMutableArray *array = [[fileutils searchResolutionsOrder] mutableCopy];
+		[array insertObject:kCCFileUtilsiPhoneHD atIndex:1];
+		[fileutils setSearchResolutionsOrder:array];
+		
+		[CCBReader setResolutionScale:2];
+
+#else
+		[fileutils setEnableiPhoneResourcesOniPad:YES];
+#endif
+		[[JSBCore sharedInstance] runScript:@"main.js"];
+	}
 }
 @end
 

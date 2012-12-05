@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A0E5F7D815C1AE5F00D44C32"
+               BlueprintIdentifier = "A06F8B78166D8C42008215BC"
                BuildableName = "JS Watermelon.app"
                BlueprintName = "JS Watermelon"
                ReferencedContainer = "container:cocos2d-ios.xcodeproj">
@@ -32,7 +32,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A0E5F7D815C1AE5F00D44C32"
+            BlueprintIdentifier = "A06F8B78166D8C42008215BC"
             BuildableName = "JS Watermelon.app"
             BlueprintName = "JS Watermelon"
             ReferencedContainer = "container:cocos2d-ios.xcodeproj">
@@ -51,7 +51,7 @@
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A0E5F7D815C1AE5F00D44C32"
+            BlueprintIdentifier = "A06F8B78166D8C42008215BC"
             BuildableName = "JS Watermelon.app"
             BlueprintName = "JS Watermelon"
             ReferencedContainer = "container:cocos2d-ios.xcodeproj">
@@ -69,7 +69,7 @@
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A0E5F7D815C1AE5F00D44C32"
+            BlueprintIdentifier = "A06F8B78166D8C42008215BC"
             BuildableName = "JS Watermelon.app"
             BlueprintName = "JS Watermelon"
             ReferencedContainer = "container:cocos2d-ios.xcodeproj">
