@@ -239,6 +239,7 @@ NSInteger ccLoadFileIntoMemory(const char *filename, unsigned char **out)
 	{
 		[_searchResolutionsOrder addObject:kCCFileUtilsiPad];
 		if( _enableiPhoneResourcesOniPad ) {
+            [_searchResolutionsOrder addObject:kCCFileUtilsiPhone];
 			[_searchResolutionsOrder addObject:kCCFileUtilsiPhone5HD];
 			[_searchResolutionsOrder addObject:kCCFileUtilsiPhoneHD];
 		}
